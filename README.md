@@ -38,6 +38,8 @@ docker logs ollama | grep -i -E "rocm|gfx|vram"
 
 Open WebUI is at `http://<host>:3000`. The first account you create becomes admin.
 
+Run the setup script tests from the repository root with `sh tests/setup_test.sh`; they do not require Docker or a render group.
+
 ## Backups
 
 Back up `data/` regularly; it contains the Ollama models and Open WebUI's database and other persistent data. From the repository root, stop the stack before archiving to avoid an inconsistent database:
