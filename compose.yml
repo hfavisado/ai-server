@@ -1,0 +1,35 @@
+services:
+  ollama:
+    image: ollama/ollama:rocm
+    container_name: ollama
+    restart: unless-stopped
+    devices:
+      - /dev/kfd
+      - /dev/dri
+    group_add:
+      - video
+      - "${RENDER_GID:?Set RENDER_GID in .env}"
+    environment:
+      # 780M is gfx1103, which is not officially supported; this maps it to gfx1100
+      HSA_OVERRIDE_GFX_VERSION: "11.0.0"
+      OLLAMA_KEEP_ALIVE: "30m"
+      OLLAMA_FLASH_ATTENTION: "1"
+      OLLAMA_KV_CACHE_TYPE: "q8_0"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+    volumes:
+      - ./data/ollama:/root/.ollama
+    ports:
+      - "127.0.0.1:11434:11434"
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    restart: unless-stopped
+    depends_on: [ollama]
+    environment:
+      OLLAMA_BASE_URL: "http://ollama:11434"
+      WEBUI_AUTH: "true"
+    volumes:
+      - ./data/open-webui:/app/backend/data
+    ports:
+      - "3000:8080"   # LAN access; change to 127.0.0.1:3000:8080 if using a reverse proxy
